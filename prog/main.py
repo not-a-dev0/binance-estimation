@@ -1,1 +1,1 @@
-print ('test')
+print ('test git push -u origin master')
