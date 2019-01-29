@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime
 
 
 from binance_api import Binance
@@ -16,6 +16,26 @@ slKLines = bot.klines(
 # 
 print('BNB/BTC 1d 4num')
 i=0
+fPriceMin = 99999999999999999.0
+fPriceMax = 0.0
+spBuy  = []
+spSell = []
+
 for slKLine in slKLines:
     i+=1
-    print(i,'Дата:',str(datetime.fromtimestamp(int(slKLine[0]))),'Покупка:',slKLine[3],'Продажа',slKLine[2],'Обьем',slKLine[7],'Сделок',slKLine[8])
+    print(i,datetime.datetime.fromtimestamp(int(slKLine[0]) / 1e3),'buy:',slKLine[3],'sell',slKLine[2],'volume',slKLine[7],'Сделок',slKLine[8])
+    spBuy.append(float(slKLine[3]))
+    spSell.append(float(slKLine[2]))
+    
+    
+    if float(slKLine[3]) < fPriceMin:
+        fPriceMin = float(slKLine[3])
+    if float(slKLine[2]) > fPriceMax:
+        fPriceMax = float(slKLine[2])
+
+
+print ('min=', fPriceMin, 'max=', fPriceMax)
+
+print(spBuy)
+print(spSell)
+
