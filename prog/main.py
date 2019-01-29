@@ -37,6 +37,19 @@ def getSlResult(slLines,fPriceBuy,fPriceSell):
     return [fProfit,fPriceBuy,fPriceSell,fDeal]
 
 
+# исходные данные ----------------
+# валютная пара 
+sPair = 'EOSUSDC'
+# количество интервалов для анализа
+iLimit = 360
+# интервал 
+sInterval = '2h'
+# количество результатов для выдачи
+iCountPrint = 7
+
+
+
+
 from binance_api import Binance
 bot = Binance(
     API_KEY='D7...Ejj',
@@ -44,13 +57,14 @@ bot = Binance(
 )
 
 slKLines = bot.klines(
-    symbol='ETHBTC',
-    interval='12h',
-    limit=100)
+    symbol=sPair,
+    interval=sInterval,
+    limit=iLimit)
 
 
-# 
-print('BNB/BTC 1d 10num')
+
+print(f'Анализируем пару {sPair} на интервале {sInterval} лимитом {iLimit}')
+
 i=0
 # минимальная цена за весь период для покупки
 fPriceMin = 99999999999999999.0
@@ -101,9 +115,53 @@ while i>0:
             iVersion += 1
     j = iTmp
 
+# Сортируем по максиму прибыли
 spResults.sort(key=lambda ii: ii[0])
-print(iVersion)
+
+
+# Выводим результирующие данные
+print(f'Расчитано {iVersion} позитивных вариантов. Колебание цены от {fPriceMin:.8f} до {fPriceMax:.8f}')
+
+print (f'\nАбсалютный рейтинг из {iCountPrint} позиций по прибыли:')
 i=iVersion
-while i>0:
+iTmpCountPrint = iCountPrint
+
+
+while (i>0) and (iTmpCountPrint>0):
     i-=1
-    print(f"{iVersion-i} - P {(spResults[i][0]):4.8f} D {(spResults[i][3]):.1f} B {(spResults[i][1]):4.8f} S {(spResults[i][2]):4.8f}")
+    iTmpCountPrint-=1
+    print(f"{iVersion-i} - {(spResults[i][0]):.2f}% {(spResults[i][3]):.1f} сделок покупка:{(spResults[i][1]):4.8f}  продажа:{(spResults[i][2]):4.8f}")
+
+print (f'\nРейтинг из {iCountPrint} позиций среди закрытых сделок по прибыли:')
+i=iVersion
+iTmpCountPrint = iCountPrint
+
+while (i>0) and (iTmpCountPrint>0):
+    i-=1
+    if int(spResults[i][3]) == (spResults[i][3]) :
+        iTmpCountPrint-=1
+        print(f"{iVersion-i} - {(spResults[i][0]):.2f}% {(spResults[i][3]):.1f} сделок покупка:{(spResults[i][1]):4.8f}  продажа:{(spResults[i][2]):4.8f}")
+
+# сортируем по максимальному количеству сделок
+spResults.sort(key=lambda ii: ii[3])
+
+
+print (f'\nАбсалютный рейтинг из {iCountPrint} позиций по кол-ву сделок:')
+i=iVersion
+iTmpCountPrint = iCountPrint
+
+
+while (i>0) and (iTmpCountPrint>0):
+    i-=1
+    iTmpCountPrint-=1
+    print(f"{iVersion-i} - {(spResults[i][0]):.2f}% {(spResults[i][3]):.1f} сделок покупка:{(spResults[i][1]):4.8f}  продажа:{(spResults[i][2]):4.8f}")
+
+print (f'\nРейтинг из {iCountPrint} позиций среди закрытых сделок по кол-ву сделок:')
+i=iVersion
+iTmpCountPrint = iCountPrint
+
+while (i>0) and (iTmpCountPrint>0):
+    i-=1
+    if int(spResults[i][3]) == (spResults[i][3]) :
+        iTmpCountPrint-=1
+        print(f"{iVersion-i} - {(spResults[i][0]):.2f}% {(spResults[i][3]):.1f} сделок покупка:{(spResults[i][1]):4.8f}  продажа:{(spResults[i][2]):4.8f}")
