@@ -10,7 +10,7 @@ bot = Binance(
 slKLines = bot.klines(
     symbol='BNBBTC',
     interval='1d',
-    limit=10)
+    limit=100)
 
 
 # 
@@ -27,7 +27,7 @@ spSell = []
 
 for slKLine in slKLines:
     i+=1
-    print(i,datetime.datetime.fromtimestamp(int(slKLine[0]) / 1e3),'buy:',slKLine[3],'sell',slKLine[2],'volume',slKLine[7],'Сделок',slKLine[8])
+    # print(i,datetime.datetime.fromtimestamp(int(slKLine[0]) / 1e3),'buy:',slKLine[3],'sell',slKLine[2],'volume',slKLine[7],'Сделок',slKLine[8])
     spBuy.append(float(slKLine[3]))
     spSell.append(float(slKLine[2]))
     
@@ -38,10 +38,10 @@ for slKLine in slKLines:
         fPriceMax = float(slKLine[2])
 
 
-print ('min=', fPriceMin, 'max=', fPriceMax)
+# print ('min=', fPriceMin, 'max=', fPriceMax)
 
-print(spBuy)
-print(spSell)
+# print(spBuy)
+# print(spSell)
 
 # флаг текущего состояния
 # готовность покупать - False
@@ -52,12 +52,30 @@ fCurrency = 100.00
 # прибыль
 fProfit = 0.00
 # количество сделок
-iDeal = 0
-
-
+fDeal = 0.0
+# цена покупки
+fPriceBuy = 0.00155
+# цена продажи
+fPriceSell = 0.00161
+# оборот
+fTurnover = 0.0
 
 for slKLine in slKLines:
-    if bFlOperation :
-        pass
+    if not bFlOperation :
+        if ( float(slKLine[3]) < fPriceBuy ) and (float(slKLine[2]) > fPriceBuy):
+            # покупка
+            bFlOperation = True
+            fDeal += 0.5
+            print(i,datetime.datetime.fromtimestamp(int(slKLine[0]) / 1e3),'BUY:',slKLine[3],'sell',slKLine[2],'volume',slKLine[7],'Сделок',slKLine[8])
     else:
-        pass
+        if ( float(slKLine[3]) < fPriceSell ) and (float(slKLine[2]) > fPriceSell):
+            # продажа
+            bFlOperation = False
+            fDeal += 0.5
+            fProfit += (fPriceSell - fPriceBuy) * fCurrency
+            print(i,datetime.datetime.fromtimestamp(int(slKLine[0]) / 1e3),'buy:',slKLine[3],'SELL',slKLine[2],'volume',slKLine[7],'Сделок',slKLine[8])
+
+
+print ('Profit',fProfit,'Deal',fDeal)
+        
+
