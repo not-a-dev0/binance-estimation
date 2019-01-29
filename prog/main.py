@@ -1,6 +1,42 @@
 import datetime
 
 
+def getSlResult(slLines,fPriceBuy,fPriceSell):
+    # 1- Анализируемый список
+    # 2- Цена покупки
+    # 3- Цена продажи
+
+
+    # флаг текущего состояния
+    # готовность покупать - False
+    # готовность продовать - True
+    bFlOperation = False
+    # количество первой валюты, просто для анализа прибыли при повторном использовании прибыли
+    fCurrency = 100.00
+    # прибыль
+    fProfit = 0.00
+    # количество сделок
+    fDeal = 0.0
+    # оборот
+    fTurnover = 0.0
+
+    for slLine in slLines:
+        if not bFlOperation :
+            if ( float(slLine[3]) < fPriceBuy ) and (float(slLine[2]) > fPriceBuy):
+                # покупка
+                bFlOperation = True
+                fDeal += 0.5
+                # print(datetime.datetime.fromtimestamp(int(slLine[0]) / 1e3),'BUY:',slLine[3],'sell',slLine[2],'volume',slLine[7],'Сделок',slLine[8])
+        else:
+            if ( float(slLine[3]) < fPriceSell ) and (float(slLine[2]) > fPriceSell):
+                # продажа
+                bFlOperation = False
+                fDeal += 0.5
+                fProfit += (fPriceSell - fPriceBuy) * fCurrency
+                # print(datetime.datetime.fromtimestamp(int(slLine[0]) / 1e3),'buy:',slLine[3],'SELL',slLine[2],'volume',slLine[7],'Сделок',slLine[8])
+    return [fProfit,fPriceBuy,fPriceSell,fDeal]
+
+
 from binance_api import Binance
 bot = Binance(
     API_KEY='D7...Ejj',
@@ -30,52 +66,31 @@ for slKLine in slKLines:
     # print(i,datetime.datetime.fromtimestamp(int(slKLine[0]) / 1e3),'buy:',slKLine[3],'sell',slKLine[2],'volume',slKLine[7],'Сделок',slKLine[8])
     spBuy.append(float(slKLine[3]))
     spSell.append(float(slKLine[2]))
-    
-    
+
+
     if float(slKLine[3]) < fPriceMin:
         fPriceMin = float(slKLine[3])
+    
     if float(slKLine[2]) > fPriceMax:
         fPriceMax = float(slKLine[2])
+print(i)
 
 
 # print ('min=', fPriceMin, 'max=', fPriceMax)
 
-# print(spBuy)
-# print(spSell)
+# результирующий список
+# 1 - покупка
+# 2 - продажа
+# 3 - прибыль
+# 4 - количество сделок
+# 5 - вариант
+spResults = []
+# номер варианта
+iVersion = 0
 
-# флаг текущего состояния
-# готовность покупать - False
-# готовность продовать - True
-bFlOperation = False
-# количество первой валюты, просто для анализа прибыли
-fCurrency = 100.00
-# прибыль
-fProfit = 0.00
-# количество сделок
-fDeal = 0.0
-# цена покупки
-fPriceBuy = 0.00155
-# цена продажи
-fPriceSell = 0.00161
-# оборот
-fTurnover = 0.0
-
-for slKLine in slKLines:
-    if not bFlOperation :
-        if ( float(slKLine[3]) < fPriceBuy ) and (float(slKLine[2]) > fPriceBuy):
-            # покупка
-            bFlOperation = True
-            fDeal += 0.5
-            print(i,datetime.datetime.fromtimestamp(int(slKLine[0]) / 1e3),'BUY:',slKLine[3],'sell',slKLine[2],'volume',slKLine[7],'Сделок',slKLine[8])
-    else:
-        if ( float(slKLine[3]) < fPriceSell ) and (float(slKLine[2]) > fPriceSell):
-            # продажа
-            bFlOperation = False
-            fDeal += 0.5
-            fProfit += (fPriceSell - fPriceBuy) * fCurrency
-            print(i,datetime.datetime.fromtimestamp(int(slKLine[0]) / 1e3),'buy:',slKLine[3],'SELL',slKLine[2],'volume',slKLine[7],'Сделок',slKLine[8])
-
-
-print ('Profit',fProfit,'Deal',fDeal)
-        
-
+while i>0:
+    i-=1
+    spResults.append(getSlResult(slKLines,float(spBuy[i]),float(spSell[i])))
+    print(iVersion+1,spResults[iVersion][0],spResults[iVersion][1],spResults[iVersion][2],spResults[iVersion][3])
+    iVersion += 1
+# print(spResults)
