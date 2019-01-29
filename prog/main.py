@@ -28,7 +28,7 @@ def getSlResult(slLines,fPriceBuy,fPriceSell):
                 fDeal += 0.5
                 # print(datetime.datetime.fromtimestamp(int(slLine[0]) / 1e3),'BUY:',slLine[3],'sell',slLine[2],'volume',slLine[7],'Сделок',slLine[8])
         else:
-            if ( float(slLine[3]) < fPriceSell ) and (float(slLine[2]) > fPriceSell):
+            if ( float(slLine[3]) < fPriceSell ) and (float(slLine[2]) > fPriceSell) and (fPriceSell>fPriceBuy):
                 # продажа
                 bFlOperation = False
                 fDeal += 0.5
@@ -44,8 +44,8 @@ bot = Binance(
 )
 
 slKLines = bot.klines(
-    symbol='BNBBTC',
-    interval='1d',
+    symbol='ETHBTC',
+    interval='12h',
     limit=100)
 
 
@@ -73,7 +73,6 @@ for slKLine in slKLines:
     
     if float(slKLine[2]) > fPriceMax:
         fPriceMax = float(slKLine[2])
-print(i)
 
 
 # print ('min=', fPriceMin, 'max=', fPriceMax)
@@ -88,9 +87,23 @@ spResults = []
 # номер варианта
 iVersion = 0
 
+j = i
+
+
 while i>0:
     i-=1
-    spResults.append(getSlResult(slKLines,float(spBuy[i]),float(spSell[i])))
-    print(iVersion+1,spResults[iVersion][0],spResults[iVersion][1],spResults[iVersion][2],spResults[iVersion][3])
-    iVersion += 1
-# print(spResults)
+    iTmp = j
+    while j>0:
+        j-=1
+        spTmp = getSlResult(slKLines,float(spBuy[i]),float(spSell[j]))
+        if spTmp[0]!=0.0:
+            spResults.append(spTmp)
+            iVersion += 1
+    j = iTmp
+
+spResults.sort(key=lambda ii: ii[0])
+print(iVersion)
+i=iVersion
+while i>0:
+    i-=1
+    print(f"{iVersion-i} - P {(spResults[i][0]):4.8f} D {(spResults[i][3]):.1f} B {(spResults[i][1]):4.8f} S {(spResults[i][2]):4.8f}")
