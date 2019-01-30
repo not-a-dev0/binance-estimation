@@ -1,7 +1,7 @@
 import datetime
 
 
-def getSlResult(slLines,fPriceBuy,fPriceSell):
+def getSlResult(slLines,fPriceBuyF,fPriceSellF):
     # 1- Анализируемый список
     # 2- Цена покупки
     # 3- Цена продажи
@@ -9,10 +9,10 @@ def getSlResult(slLines,fPriceBuy,fPriceSell):
 
     # флаг текущего состояния
     # готовность покупать - False
-    # готовность продовать - True
+    # готовность продавать - True
     bFlOperation = False
     # количество первой валюты, просто для анализа прибыли при повторном использовании прибыли
-    fCurrency = 100.00
+    fCurrency = 1.00
     # прибыль
     fProfit = 0.00
     # количество сделок
@@ -20,33 +20,35 @@ def getSlResult(slLines,fPriceBuy,fPriceSell):
     # оборот
     fTurnover = 0.0
 
+    fMoneyF = 1000
+
     for slLine in slLines:
         if not bFlOperation :
-            if ( float(slLine[3]) < fPriceBuy ) and (float(slLine[2]) > fPriceBuy):
+            if ( float(slLine[3]) < fPriceBuyF ) and (float(slLine[2]) > fPriceBuyF):
                 # покупка
                 bFlOperation = True
                 fDeal += 0.5
-                # print(datetime.datetime.fromtimestamp(int(slLine[0]) / 1e3),'BUY:',slLine[3],'sell',slLine[2],'volume',slLine[7],'Сделок',slLine[8])
         else:
-            if ( float(slLine[3]) < fPriceSell ) and (float(slLine[2]) > fPriceSell) and (fPriceSell>fPriceBuy):
+            if ( float(slLine[3]) < fPriceSellF ) and (float(slLine[2]) > fPriceSellF) and (fPriceSellF>fPriceBuyF):
                 # продажа
                 bFlOperation = False
                 fDeal += 0.5
-                fProfit += (fPriceSell - fPriceBuy) * fCurrency
-                # print(datetime.datetime.fromtimestamp(int(slLine[0]) / 1e3),'buy:',slLine[3],'SELL',slLine[2],'volume',slLine[7],'Сделок',slLine[8])
-    return [fProfit,fPriceBuy,fPriceSell,fDeal]
+                fProfit +=  fMoneyF / fPriceBuyF * fPriceSellF  - fMoneyF
+    
+    fProfit = fProfit/fMoneyF * 100
+    
+    return [fProfit,fPriceBuyF,fPriceSellF,fDeal]
 
 
 # исходные данные ----------------
 # валютная пара 
 sPair = 'EOSUSDC'
 # количество интервалов для анализа
-iLimit = 360
+iLimit = 180
 # интервал 
 sInterval = '2h'
 # количество результатов для выдачи
-iCountPrint = 7
-
+iCountPrint = 5
 
 
 
@@ -122,7 +124,7 @@ spResults.sort(key=lambda ii: ii[0])
 # Выводим результирующие данные
 print(f'Расчитано {iVersion} позитивных вариантов. Колебание цены от {fPriceMin:.8f} до {fPriceMax:.8f}')
 
-print (f'\nАбсалютный рейтинг из {iCountPrint} позиций по прибыли:')
+print (f'\nАбсолютный рейтинг из {iCountPrint} позиций по прибыли:')
 i=iVersion
 iTmpCountPrint = iCountPrint
 
@@ -146,7 +148,7 @@ while (i>0) and (iTmpCountPrint>0):
 spResults.sort(key=lambda ii: ii[3])
 
 
-print (f'\nАбсалютный рейтинг из {iCountPrint} позиций по кол-ву сделок:')
+print (f'\nАбсолютный рейтинг из {iCountPrint} позиций по кол-ву сделок:')
 i=iVersion
 iTmpCountPrint = iCountPrint
 
@@ -165,3 +167,5 @@ while (i>0) and (iTmpCountPrint>0):
     if int(spResults[i][3]) == (spResults[i][3]) :
         iTmpCountPrint-=1
         print(f"{iVersion-i} - {(spResults[i][0]):.2f}% {(spResults[i][3]):.1f} сделок покупка:{(spResults[i][1]):4.8f}  продажа:{(spResults[i][2]):4.8f}")
+
+print ('\n')
